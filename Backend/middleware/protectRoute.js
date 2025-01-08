@@ -4,7 +4,7 @@ import { ENV_VARS } from "../config/envVars.js";
 
 export const protectRoute = async (req, res, next) => {
     try {
-        const token = req.cookies["jwt-tasks"];
+        const token = req.cookies["jwt-recipe"];
 
         if (!token) {
             return res.status(401).json({ success: false, message: "Unauthorized - No Token Provided" });

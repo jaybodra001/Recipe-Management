@@ -79,7 +79,7 @@ const RecipeView = () => {
         <main className="flex-1 p-6 overflow-y-auto">
           <div className="bg-white p-6 rounded shadow animate-fade-in">
             <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-            <h2 className="text-2xl font-bold text-gray-800">Recipe Listing</h2>
+            <h2 className="text-2xl font-bold text-gray-800">Recipes</h2>
 
               {/* Search Bar */}
               <input
