@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-
+import { useAuthStore } from "../store/authUser";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  //const { login, isLoggingIn } = useAuthStore();
+  const { login, isLoggingIn } = useAuthStore();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    //const success = await login({ email, password })
-    // console.log("Login success:", success)
+    const success = await login({ email, password })
+     console.log("Login success:", success)
   };
 
   return (

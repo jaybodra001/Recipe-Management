@@ -1,7 +1,9 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import { useAuthStore } from "../store/authUser";
 
 const Sidebar = ({ isVisible }) => {
+  const { logout } = useAuthStore();
   return (
     <aside
       className={`bg-red-200 text-black w-64 p-4 space-y-4 ${
@@ -32,12 +34,12 @@ const Sidebar = ({ isVisible }) => {
       >
         Add Recipe
       </NavLink>
-      <NavLink
-        to="#"
-        className="block p-2 rounded hover:bg-red-600 hover:text-white transition"
+      <a
+        className="block p-2 rounded cursor-pointer hover:bg-red-600 hover:text-white transition"
+        onClick={logout}
       >
         Logout
-      </NavLink>
+      </a>
     </aside>
   );
 };

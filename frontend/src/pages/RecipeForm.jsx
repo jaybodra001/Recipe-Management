@@ -2,40 +2,52 @@ import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import Footer from "../components/Footer";
+import { useAuthStore } from "../store/authUser";
+import { toast } from "react-toastify";
 
-const RecipeForm = ({ onSubmit, initialData }) => {
-  const [recipe, setRecipe] = useState(
-    initialData || {
-      name: "",
-      cuisine: "",
-      ingredients: "",
-      instructions: "",
-      cookingTime: "",
-    }
-  );
+const RecipeForm = () => {
+  const { createRecipe } = useAuthStore(); 
+
+  const [recipe, setRecipe] = useState({
+    name: "",
+    cuisine: "",
+    ingredients: "",
+    instructions: "",
+    cookingTime: "",
+  });
+
+  const [isLoading, setIsLoading] = useState(false); 
+  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setRecipe({ ...recipe, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+
     const formattedRecipe = {
       ...recipe,
       ingredients: recipe.ingredients.split(",").map((ing) => ing.trim()),
     };
-    onSubmit(formattedRecipe);
-    setRecipe({
-      name: "",
-      cuisine: "",
-      ingredients: "",
-      instructions: "",
-      cookingTime: "",
-    });
-  };
 
-  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+    try {
+      await createRecipe(formattedRecipe);
+      setRecipe({
+        name: "",
+        cuisine: "",
+        ingredients: "",
+        instructions: "",
+        cookingTime: "",
+      });
+    } catch (error) {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const toggleSidebar = () => {
     setIsSidebarVisible(!isSidebarVisible);
@@ -49,9 +61,7 @@ const RecipeForm = ({ onSubmit, initialData }) => {
         <main className="flex-1 p-6 overflow-y-auto">
           <div className="bg-white p-8 rounded-lg shadow-lg max-w-2xl mx-auto">
             <form onSubmit={handleSubmit} className="space-y-6">
-              <h2 className="text-2xl font-bold text-gray-800">
-                {initialData ? "Edit Recipe" : "Add New Recipe"}
-              </h2>
+              <h2 className="text-2xl font-bold text-gray-800">Add New Recipe</h2>
               <div className="flex flex-col">
                 <label htmlFor="name" className="text-sm font-medium text-gray-600">
                   Recipe Name
@@ -124,9 +134,14 @@ const RecipeForm = ({ onSubmit, initialData }) => {
               </div>
               <button
                 type="submit"
-                className="w-full bg-green-500 text-white py-3 rounded-md hover:bg-green-600 transition-all"
+                disabled={isLoading}
+                className={`w-full py-3 rounded-md transition-all ${
+                  isLoading
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-500 text-white hover:bg-green-600"
+                }`}
               >
-                {initialData ? "Update Recipe" : "Add Recipe"}
+                {isLoading ? "Processing..." : "Add Recipe"}
               </button>
             </form>
           </div>

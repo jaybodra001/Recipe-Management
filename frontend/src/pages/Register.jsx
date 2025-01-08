@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuthStore } from "../store/authUser";
 
 const Register = () => {
   
@@ -10,11 +11,11 @@ const Register = () => {
 	const [name, setName] = useState("");
 	const [password, setPassword] = useState("");
 
-  //  const { signup, isSigningUp } = useAuthStore();
+  const { signup, isSigningUp } = useAuthStore();
 
 	const handleSignUp = (e) => {
 		e.preventDefault();
-		//signup({ email, name, password });
+		signup({ email, name, password });
 	};
 
   return (
@@ -73,9 +74,9 @@ const Register = () => {
       <button
         type="submit"
         className="w-full bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition"
-        // disabled={isSigningUp}
+        disabled={isSigningUp}
       >
-         {/* {isSigningUp ? "Loading..." : "Register"} */}Register
+         {isSigningUp ? "Loading..." : "Register"}
       </button>
       <div className='text-center text-gray-400'>
 						Already a member?{" "}

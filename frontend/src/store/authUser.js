@@ -1,22 +1,20 @@
 import axios from "axios";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import { create } from "zustand";
 
 export const useAuthStore = create((set) => ({
   user: null,
+  recipes: [],
   isSigningUp: false,
   isCheckingAuth: true,
   isLoggingOut: false,
   isLoggingIn: false,
-  isAddTask: false,
-  isShowTask: false,
-  tasks: [],
-  totalTasks: 0, 
-  currentPage: 1,
-  totalPages: 1,
-  isUpdateTask: false,
-  isDeleteTask: false,
+  isCreatingRecipe: false,
+  isEditingRecipe: false,
+  isDeletingRecipe: false,
+  isFetchingRecipes: false,
 
+  // Signup
   signup: async (credentials) => {
     set({ isSigningUp: true });
     try {
@@ -29,6 +27,7 @@ export const useAuthStore = create((set) => ({
     }
   },
 
+  // Login
   login: async (credentials) => {
     set({ isLoggingIn: true });
     try {
@@ -42,102 +41,7 @@ export const useAuthStore = create((set) => ({
     }
   },
 
-  authCheck: async () => {
-    set({ isCheckingAuth: true });
-    try {
-      const response = await axios.get("/api/v1/auth/authCheck");
-      set({ user: response.data.user, isCheckingAuth: false });
-    } catch (error) {
-      set({ isCheckingAuth: false, user: null });
-    }
-  },
-
-  addTask: async (taskData) => {
-    set({ isAddTask: true });
-    try {
-      const response = await axios.post('/api/v1/user/add-task', taskData);
-      set((state) => ({
-        tasks: [...state.tasks, response.data.task], // Add the new task to the existing list
-        isAddTask: false,
-      }));
-      return response.data.task; 
-    } catch (error) {
-      console.error('Error adding task:', error.response?.data?.message || error.message);
-      toast.error(error.response?.data?.message || 'Task creation failed');
-      set({ isAddTask: false });
-      throw error; 
-    }
-  },
-  
-  getAllTasks: async (page = 1, limit = 10) => {
-    set({ isShowTask: true });
-    try {
-      const response = await axios.get(`/api/v1/user/all-tasks?page=${page}&limit=${limit}`);
-      set({
-        tasks: response.data.tasks,
-        totalTasks: response.data.totalTasks,  
-        totalPages: response.data.totalPages,
-        isShowTask: false,
-      });
-    } catch (error) {
-      toast.error(error.response.data.message || "Failed to load tasks");
-      set({ isShowTask: false, tasks: [], totalTasks: 0 });
-    }
-  },
-
-  getUserTasks: async (page = 1, limit = 10) => {
-    set({ isShowTask: true });
-    try {
-      const response = await axios.get(`/api/v1/user/user-tasks?page=${page}&limit=${limit}`);
-      set({
-        tasks: response.data.tasks,
-        totalTasks: response.data.totalTasks,  
-        totalPages: response.data.totalPages,
-        isShowTask: false,
-      });
-    } catch (error) {
-      toast.error(error.response.data.message || "Failed to load tasks");
-      set({ isShowTask: false, tasks: [], totalTasks: 0 });
-    }
-  },
-
-updateTask: async (taskId, updatedTask) => {
-  set({ isUpdateTask: true });
-  try {
-    const response = await axios.put(`/api/v1/user/update-task/${taskId}`, updatedTask); 
-    set({ isUpdateTask: false, tasks: response.data.tasks }); 
-    toast.success("Task updated successfully");
-  } catch (error) {
-    toast.error(error.response.data.message || "Task update failed");
-    set({ isUpdateTask: false });
-  }
-},
-
-taskCompOrNot: async (taskId, updatedTask) => {
-	set({ isUpdateTask: true });
-	try {
-	  const response = await axios.put(`/api/v1/user/up-task/${taskId}`, updatedTask); 
-	  set({ isUpdateTask: false, tasks: response.data.tasks });  
-	  toast.success("Task status successfully updated");
-	} catch (error) {
-	  toast.error(error.response.data.message || "Task update failed");
-	  set({ isUpdateTask: false });
-	}
-  },
-
-deleteTask: async (taskId) => {
-	set({ isDeleteTask: true });
-	try {
-	  const response = await axios.delete(`/api/v1/user/delete-task/${taskId}`); 
-	  set({ isDeleteTask: false, tasks: response.data.tasks });
-	  toast.success("Task deleted successfully");
-	} catch (error) {
-	  toast.error(error.response.data.message || "Task delete failed");
-	  set({ isDeleteTask: false });
-	}
-  },
-
-
+  // Logout
   logout: async () => {
     set({ isLoggingOut: true });
     try {
@@ -150,25 +54,76 @@ deleteTask: async (taskId) => {
     }
   },
 
-  // Update Profile
-  updateProfile: async (profileData) => {
+  // Auth Check
+  authCheck: async () => {
+    set({ isCheckingAuth: true });
     try {
-      const response = await axios.put('/api/v1/auth/update-profile', profileData);
-      set({ user: response.data.user }); // Update user in state
-      toast.success('Profile updated successfully!');
+      const response = await axios.get("/api/v1/auth/authCheck");
+      set({ user: response.data.user, isCheckingAuth: false });
     } catch (error) {
-      throw error;
+      set({ isCheckingAuth: false, user: null });
     }
   },
 
-  // Change Password
-  changePassword: async (passwordData) => {
+  // Fetch Recipes
+  fetchRecipes: async () => {
+    set({ isFetchingRecipes: true });
     try {
-      await axios.put('/api/v1/auth/change-password', passwordData);
+      const response = await axios.get("/api/v1/auth/recipe");
+      set({ recipes: response.data.recipes, isFetchingRecipes: false });
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to change password.');
-      throw error;
+      set({ isFetchingRecipes: false });
+      toast.error(error.response.data.message || "Failed to fetch recipes");
     }
   },
 
+  // Create Recipe
+  createRecipe: async (recipeData) => {
+    set({ isCreatingRecipe: true });
+    try {
+      const response = await axios.post("/api/v1/auth/recipe", recipeData);
+      set((state) => ({
+        recipes: [...state.recipes, response.data.recipe],
+        isCreatingRecipe: false,
+      }));
+      toast.success("Recipe created successfully");
+    } catch (error) {
+      set({ isCreatingRecipe: false });
+      toast.error(error.response.data.message || "Failed to create recipe");
+    }
+  },
+
+  // Edit Recipe
+  editRecipe: async (id, updatedData) => {
+    set({ isEditingRecipe: true });
+    try {
+      const response = await axios.put(`/api/v1/auth/recipe/${id}`, updatedData);
+      set((state) => ({
+        recipes: state.recipes.map((recipe) =>
+          recipe._id === id ? response.data.recipe : recipe
+        ),
+        isEditingRecipe: false,
+      }));
+      toast.success("Recipe updated successfully");
+    } catch (error) {
+      set({ isEditingRecipe: false });
+      toast.error(error.response.data.message || "Failed to update recipe");
+    }
+  },
+
+  // Delete Recipe
+  deleteRecipe: async (id) => {
+    set({ isDeletingRecipe: true });
+    try {
+      await axios.delete(`/api/v1/auth/recipe/${id}`);
+      set((state) => ({
+        recipes: state.recipes.filter((recipe) => recipe._id !== id),
+        isDeletingRecipe: false,
+      }));
+      toast.success("Recipe deleted successfully");
+    } catch (error) {
+      set({ isDeletingRecipe: false });
+      toast.error(error.response.data.message || "Failed to delete recipe");
+    }
+  },
 }));
